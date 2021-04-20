@@ -1,0 +1,70 @@
+- 👋 Hi, I’m @lehao2806
+- 👀 I’m interested in ...
+- 🌱 I’m currently learning ...
+- 💞️ I’m looking to collaborate on ...
+- 📫 How to reach me ...
+
+<!---
+lehao2806/lehao2806 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+You can click the Preview link to take a look at your changes.
+--->
+
+--Anh/chị hãy tạo 1 View V_KHACHHANG yêu cầu có các thông tin như sau:
+--MA_KHACH_HANG, TEN_KHACH_HANG
+--DIA_CHI (Chỉ có 10 chữ cái đầu tiên được hiển thị) SUBSTR
+--SO_DIEN_THOAI (Hiển thị '09xx.xxx.xxx' cho toàn bộ KH)
+--NAM_SINH (Chỉ hiển thị duy nhất Năm sinh không có ngày tháng)
+
+CREATE VIEW V_KHACHHANG AS
+SELECT 
+ [MAKH] AS MA_KHACH_HANG
+,[HOTEN] AS TEN_KHACH_HANG
+,SUBSTRING([DCHI],1,10) AS DIA_CHI
+,'09xx.xxx.xxx' AS SO_DIEN_THOAI
+,YEAR([NGSINH]) AS NAM_SINH
+FROM KHACHHANG;
+
+SELECT * FROM [dbo].[V_KHACHHANG];
+--BÀI TẬP 2
+--Để đánh giá nhân viên xuất sắc
+--Anh/chị hãy viết 1 view đặt tên là V_TONGKETKD có các thông tin sau
+--MA_NHAN_VIEN, HO_VA_TEN
+--TONG_SO_HD (Tính tổng lượng hóa đơn mà nhân viên bán được)
+--TONG_DOANH_THU (Tính tổng doanh thu mà nhân viên bán được)
+
+create view V_TONGKETKD as
+select 
+NV.MANV as MA_NHAN_VIEN,
+HOTEN as HO_VA_TEN,
+COUNT(HD.[SOHD]) as TONG_SO_HD,
+SUM(HD.[TRIGIA]) as TONG_DOANH_THU
+from [dbo].[NHANVIEN] as NV
+inner join HOADON as HD on nv.MANV = hd.MANV
+group by NV.MANV, HOTEN;
+
+select * from [dbo].[V_TONGKETKD];
+
+--BÀI TẬP 3
+---SỬ DỤNG CSDL BANHANG MỚI IMPORT ĐỂ LÀM
+--Để đánh giá tình hình kinh doanh từ năm 2018 trở lại đây của hệ thống
+--Anh/chị hãy viết 1 câu lệnh duy nhất để hiện thị đầy đủ các thông tin sau
+--Năm
+--Mã chi nhánh, người quản lý
+--Mã nhân viên, Họ tên nhân viên
+--Tổng số tiền nhân viên bán được
+--Số tiền hoa hồng cao nhất mà 1 nhân viên nhận được 
+--từ 1 giao dịch là bao nhiêu biết Số tiền hoa hồng = STMHNT * Hoahong / 100
+
+SELECT YEAR(TRANS_TIME) NAM_GIAO_DICH,
+[Store ID] AS MA_CUA_HANG,
+CN.[Quản lý] AS TEN_QUAN_LY,
+BH.Sale_man_ID AS MA_NV,
+BH.Sale_man AS TEN_NV,
+SUM([Số tiền Mua hàng nguyên tệ]) AS TONG_TIEN_BAN,
+MAX([Số tiền Mua hàng nguyên tệ]*[Hoa hồng]/100) AS HOA_HONG_CAO_NHAT
+FROM BANHANG BH
+INNER JOIN CHINHANH CN ON BH.[Store ID] = CN.[Mã cửa hàng]
+WHERE YEAR(TRANS_TIME) >= 2018
+GROUP BY YEAR(TRANS_TIME),[Store ID],CN.[Quản lý],BH.Sale_man_ID,BH.Sale_man
+HAVING SUM([Số tiền Mua hàng nguyên tệ]) > 100000000
+ORDER BY YEAR(TRANS_TIME), [Store ID], CN.[Quản lý], BH.Sale_man_ID
